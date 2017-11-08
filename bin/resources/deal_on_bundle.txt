@@ -1,0 +1,1 @@
+1,deal_on_bundle,mbp,1,vga,Y
