@@ -84,16 +84,15 @@ public class CheckoutHelper {
 
 	private void addFreeProductsToInvoice() {
 		// TODO Auto-generated method stub
-		if (!invoiceItemsFreeProducts.isEmpty()) {
-			InvoiceLineItem item = null;
-			for (Map.Entry<String, InvoiceLineItem> entry : invoiceItemsFreeProducts.entrySet()) {
-				if (invoiceItems.containsKey(entry.getKey())) {
-					item = invoiceItems.get(entry.getKey());
-					item.setNoOfItems(item.getNoOfItems() + 1);
+		InvoiceLineItem item = null;
+		for (Map.Entry<String, InvoiceLineItem> entry : invoiceItemsFreeProducts.entrySet()) {
+			if (invoiceItems.containsKey(entry.getKey())) {
+				item = invoiceItems.get(entry.getKey());
+				item.setNoOfItems(item.getNoOfItems() + 1);
+				if (item.getDiscountAmount() != null)
 					item.setDiscountAmount(item.getDiscountAmount().add(entry.getValue().getUnitPrice()));
-				} else {
-					invoiceItems.put(entry.getKey(), entry.getValue());
-				}
+			} else {
+				invoiceItems.put(entry.getKey(), entry.getValue());
 			}
 		}
 	}
@@ -104,13 +103,7 @@ public class CheckoutHelper {
 		// particular product
 		for (OfferType offerType : offerTypes) {
 			if ("Y".equalsIgnoreCase(offerType.getOfferOnProduct())) {
-
 				loadOfferDetailsForOfferType(offerType.getDiscountType(), lineItem.getItemShortName());
-
-/*				if (offerDetailsForOfferType.isEmpty()
-						|| !offerDetailsForOfferType.containsKey(lineItem.getItemShortName())) {
-					loadOfferDetailsForOfferType(offerType.getDiscountType(), lineItem.getItemShortName());
-				}*/
 				if ("deal_on_numbers".equalsIgnoreCase(offerType.getDiscountType())) {
 					applyDealOnNumbers(lineItem, "deal_on_numbers");
 				}
@@ -126,9 +119,9 @@ public class CheckoutHelper {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void applyDealOnBulk(InvoiceLineItem lineItem, String discountType) {				
+	private void applyDealOnBulk(InvoiceLineItem lineItem, String discountType) {
 		// TODO Auto-generated method stub
-		System.out.println("inside applyDealOnBulk >>"); 
+		System.out.println("inside applyDealOnBulk >>");
 		ArrayList<DealOnBulkOffer> dealsForBulk = (ArrayList<DealOnBulkOffer>) offerDetailsForOfferType
 				.get(lineItem.getItemShortName());
 		for (DealOnBulkOffer dealsForBulkObj : dealsForBulk) {
@@ -136,9 +129,9 @@ public class CheckoutHelper {
 					&& lineItem.getNoOfItems() > dealsForBulkObj.getItemsRequiredForDeal()) {
 
 				BigDecimal offeredValueForUnit = dealsForBulkObj.getOfferPrice();
-				BigDecimal actualAmount = lineItem.getUnitPrice().multiply(new BigDecimal(lineItem.getNoOfItems()));			
-			    BigDecimal discountAmount = actualAmount.subtract(offeredValueForUnit.multiply(
-			    		new BigDecimal(lineItem.getNoOfItems())));
+				BigDecimal actualAmount = lineItem.getUnitPrice().multiply(new BigDecimal(lineItem.getNoOfItems()));
+				BigDecimal discountAmount = actualAmount
+						.subtract(offeredValueForUnit.multiply(new BigDecimal(lineItem.getNoOfItems())));
 				lineItem.setDiscountAmount(discountAmount);
 				lineItem.setTotal(lineItem.getTotal().subtract(discountAmount));
 				lineItem.setOfferAlreadyApplied(true);
@@ -148,36 +141,38 @@ public class CheckoutHelper {
 
 	private void applyDealOnBundle(InvoiceLineItem lineItem, String discountType) {
 		// TODO Auto-generated method stub
-		System.out.println("inside apply deal on bubdle ");
+		System.out.println("inside apply deal on bundle ");
 		@SuppressWarnings("unchecked")
 		ArrayList<DealOnBundleOffer> dealsForBundle = (ArrayList<DealOnBundleOffer>) offerDetailsForOfferType
 				.get(lineItem.getItemShortName());
+		Integer freeProducts = 0;
 		for (DealOnBundleOffer dealsForBundleObj : dealsForBundle) {
 			if (discountType.equals(dealsForBundleObj.getDealType())
 					&& lineItem.getItemShortName().equalsIgnoreCase(dealsForBundleObj.getDealOnProductShortName())
 					&& lineItem.getNoOfItems() >= dealsForBundleObj.getItemsRequiredForDeal()) {
 
-				Integer freeProducts = lineItem.getNoOfItems() / dealsForBundleObj.getItemsRequiredForDeal();
+				freeProducts = lineItem.getNoOfItems() / dealsForBundleObj.getItemsRequiredForDeal();
 				System.out.println("priting free products >>>>>>> " + freeProducts);
 				String freeProductShorTname = dealsForBundleObj.getOfferedProductShortName();
 				lineItem.setOfferAlreadyApplied(true);
-				addItemTofreeProductsMap(freeProductShorTname);
+				addItemTofreeProductsMap(freeProductShorTname, freeProducts);
 			}
 		}
 
 	}
 
-	private void addItemTofreeProductsMap(String freeProductShorTname) {
+	private void addItemTofreeProductsMap(String freeProductShorTname, Integer freeProducts) {
 		// TODO Auto-generated method stub
 		Product product = (Product) availableProducts.get(freeProductShorTname);
 		InvoiceLineItem item = null;
 		if (invoiceItemsFreeProducts.containsKey(product.getProductShortName())) {
 			item = invoiceItemsFreeProducts.get(product.getProductShortName());
-			item.setNoOfItems(item.getNoOfItems() + 1);
+			if (freeProducts.intValue() == 0)
+				item.setNoOfItems(item.getNoOfItems() + freeProducts);
 		} else {
 			item = new InvoiceLineItem(product.getProductName(), product.getProductShortName(), product.getUnitPrice(),
 					product.getEligibleForDiscuont());
-			item.setNoOfItems(1);
+			item.setNoOfItems(freeProducts);
 			item.setUnitPrice(product.getUnitPrice());
 			item.setTotal(new BigDecimal(0.00));
 			invoiceItemsFreeProducts.put(product.getProductShortName(), item);
@@ -188,21 +183,21 @@ public class CheckoutHelper {
 	private void applyDealOnNumbers(InvoiceLineItem lineItem, String discountType) {
 		// TODO Auto-generated method stub
 		System.out.println("inside apply deal on numbers ");
-		ArrayList dealsForNumbers = (ArrayList) offerDetailsForOfferType
-				.get(lineItem.getItemShortName());
+		ArrayList dealsForNumbers = (ArrayList) offerDetailsForOfferType.get(lineItem.getItemShortName());
 		for (Object dealsForNumberObj : dealsForNumbers) {
-			if(dealsForNumberObj instanceof  DealOnNumberOffer){
-				DealOnNumberOffer dealsForNumberObjTmp= (DealOnNumberOffer)dealsForNumberObj;
-			if (discountType.equals(dealsForNumberObjTmp.getDealType())
-					&& lineItem.getNoOfItems() >= dealsForNumberObjTmp.getItemsRequiredForDeal()) {
+			if (dealsForNumberObj instanceof DealOnNumberOffer) {
+				DealOnNumberOffer dealsForNumberObjTmp = (DealOnNumberOffer) dealsForNumberObj;
+				System.out.println(dealsForNumberObjTmp);
+				if (discountType.equals(dealsForNumberObjTmp.getDealType())
+						&& lineItem.getNoOfItems() >= dealsForNumberObjTmp.getItemsRequiredForDeal()) {
 
-				Integer freeProducts = lineItem.getNoOfItems() / dealsForNumberObjTmp.getItemsRequiredForDeal();
-				System.out.println("priting free products 11 >>>>>>> " + freeProducts);
-				BigDecimal valueOfthefreeItem = lineItem.getUnitPrice().multiply(new BigDecimal(freeProducts));
-				lineItem.setDiscountAmount(valueOfthefreeItem);
-				lineItem.setTotal(lineItem.getTotal().subtract(valueOfthefreeItem));
-				lineItem.setOfferAlreadyApplied(true);
-			}
+					Integer freeProducts = lineItem.getNoOfItems() / dealsForNumberObjTmp.getItemsRequiredForDeal();
+					System.out.println("priting free products 11 >>>>>>> " + freeProducts);
+					BigDecimal valueOfthefreeItem = lineItem.getUnitPrice().multiply(new BigDecimal(freeProducts));
+					lineItem.setDiscountAmount(valueOfthefreeItem);
+					lineItem.setTotal(lineItem.getTotal().subtract(valueOfthefreeItem));
+					lineItem.setOfferAlreadyApplied(true);
+				}
 			}
 		}
 	}
@@ -215,15 +210,15 @@ public class CheckoutHelper {
 	}
 
 	private void loadOfferDetailsForOfferType(String offerType, String productShortName) {
-			if ("deal_on_numbers".equalsIgnoreCase(offerType)) {
-				loadDealOnNumbers(deal_on_numbers, productShortName);
-			}
-			if ("deal_on_bulk".equalsIgnoreCase(offerType)) {
-				loadDealOnNBulk(deal_on_bulk, productShortName);
-			}
-			if ("deal_on_bundle".equalsIgnoreCase(offerType)) {
-				loadDealOnNBundle(deal_on_bundle, productShortName);
-			}
+		if ("deal_on_numbers".equalsIgnoreCase(offerType)) {
+			loadDealOnNumbers(deal_on_numbers, productShortName);
+		}
+		if ("deal_on_bulk".equalsIgnoreCase(offerType)) {
+			loadDealOnNBulk(deal_on_bulk, productShortName);
+		}
+		if ("deal_on_bundle".equalsIgnoreCase(offerType)) {
+			loadDealOnNBundle(deal_on_bundle, productShortName);
+		}
 	}
 
 	private void loadDealOnNBundle(String resourceName, String productShortName) {
@@ -236,9 +231,16 @@ public class CheckoutHelper {
 			dealOnBundleOffer = new DealOnBundleOffer(Integer.parseInt(bundleOfferArray[0]), bundleOfferArray[1],
 					bundleOfferArray[2], Integer.parseInt(bundleOfferArray[3]), Integer.parseInt(bundleOfferArray[4]),
 					bundleOfferArray[5]);
-			dealsForBundle.add(dealOnBundleOffer);
+			if (dealOnBundleOffer.getDealOnProductShortName().equalsIgnoreCase(productShortName)) {
+				dealsForBundle.add(dealOnBundleOffer);
+			}
 		}
-		offerDetailsForOfferType.put(productShortName, dealsForBundle);
+		if (offerDetailsForOfferType.containsKey(productShortName)) {
+			ArrayList tmpList = (ArrayList) offerDetailsForOfferType.get(productShortName);
+			tmpList.addAll(dealsForBundle);
+		} else {
+			offerDetailsForOfferType.put(productShortName, dealsForBundle);
+		}
 	}
 
 	private void loadDealOnNBulk(String resourceName, String productShortName) {
@@ -251,15 +253,19 @@ public class CheckoutHelper {
 			dealOnBulkOffer = new DealOnBulkOffer(Integer.parseInt(offerTypesArray[0]), offerTypesArray[1],
 					offerTypesArray[2], Integer.parseInt(offerTypesArray[3]),
 					BigDecimal.valueOf(Double.valueOf(offerTypesArray[4])));
-			dealsFoBulk.add(dealOnBulkOffer);
+			if (dealOnBulkOffer.getDealOnProductShortName().equalsIgnoreCase(productShortName)) {
+				dealsFoBulk.add(dealOnBulkOffer);
+			}
 		}
-		offerDetailsForOfferType.put(productShortName, dealsFoBulk);
+		if (offerDetailsForOfferType.containsKey(productShortName)) {
+			ArrayList tmpList = (ArrayList) offerDetailsForOfferType.get(productShortName);
+			tmpList.addAll(dealsFoBulk);
+		} else {
+			offerDetailsForOfferType.put(productShortName, dealsFoBulk);
+		}
 	}
 
 	private void loadDealOnNumbers(String resourceName, String productShortName) {
-
-		 System.out.println("from load deal on numbers ***** ");
-		
 		List<String> dealOnNumbersString = FileHelper.loadDetailsfromFile(resourceName);
 		DealOnNumberOffer dealOnNumberOffer = null;
 		ArrayList dealsForNumber = new ArrayList();
@@ -267,16 +273,16 @@ public class CheckoutHelper {
 			String offerTypesArray[] = offerTypeString.split(",");
 			dealOnNumberOffer = new DealOnNumberOffer(Integer.parseInt(offerTypesArray[0]), offerTypesArray[1],
 					offerTypesArray[2], Integer.parseInt(offerTypesArray[3]), Integer.parseInt(offerTypesArray[4]));
-			  dealsForNumber.add(dealOnNumberOffer);
-			//  System.out.println(dealOnNumberOffer);
-		   }		
-	      /*  if(offerDetailsForOfferType.containsKey(productShortName)){
-				ArrayList tmpList = (ArrayList)offerDetailsForOfferType.get(productShortName);
-				tmpList.addAll(dealsForNumber);
-				offerDetailsForOfferType.put(productShortName, tmpList);
-			}else{*/
-	//	System.out.println("List size "+ dealsForNumber.size());
-			   offerDetailsForOfferType.put(productShortName, dealsForNumber);
+			if (dealOnNumberOffer.getProductShortName().equalsIgnoreCase(productShortName)) {
+				dealsForNumber.add(dealOnNumberOffer);
+			}
+		}
+		if (offerDetailsForOfferType.containsKey(productShortName)) {
+			ArrayList tmpList = (ArrayList) offerDetailsForOfferType.get(productShortName);
+			tmpList.addAll(dealsForNumber);
+		} else {
+			offerDetailsForOfferType.put(productShortName, dealsForNumber);
+		}
 	}
 
 	private void populateOfferTypeMap(List<String> offerTypeslst) {
@@ -296,11 +302,11 @@ public class CheckoutHelper {
 			}
 		}
 	}
-   
+
 	/*
 	 * 
 	 */
-	
+
 	private HashMap<String, InvoiceLineItem> prepareInvoiceLineItem(List<String> userInputs) {
 
 		HashMap<String, InvoiceLineItem> lineItemMap = new HashMap<String, InvoiceLineItem>();
