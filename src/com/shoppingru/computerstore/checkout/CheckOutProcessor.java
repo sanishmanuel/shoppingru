@@ -35,6 +35,8 @@ public class CheckOutProcessor {
 		// TODO Auto-generated method stub
 		CheckOutProcessor checkOutProcessor = new CheckOutProcessor();
 		checkOutProcessor.loadAvailableProducts();
+		CheckoutHelper.loadAvailableOffers();
+		CheckoutHelper.loadOfferDetailsForOfferType();
 		checkOutProcessor.processItems();
 	}
 
