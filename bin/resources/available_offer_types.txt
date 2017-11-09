@@ -1,3 +1,4 @@
 1,atv,deal_on_numbers,Y
 2,ipd,deal_on_bulk,Y
 3,mbp,deal_on_bundle,Y
+4,ipd,deal_on_numbers,Y
