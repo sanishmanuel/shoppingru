@@ -40,6 +40,7 @@ public class CheckOutProcessor {
 
 	private void processItems() {
 		// TODO Auto-generated method stub
+		//Remove the below code once tested 	
 		List<String> userInputs = new ArrayList<String>();
 		try {
 			System.out.println(welcomeMessage);

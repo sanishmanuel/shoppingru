@@ -21,6 +21,8 @@ public class InvoiceLineItem {
 	private BigDecimal total;
 	private String eligibleForDiscuont;
 	
+	private boolean isOfferAlreadyApplied;
+	
 	public InvoiceLineItem(){
 		
 	}
@@ -150,6 +152,20 @@ public class InvoiceLineItem {
 		this.eligibleForDiscuont = eligibleForDiscuont;
 	}
 
+	/**
+	 * @return the isOfferAlreadyApplied
+	 */
+	public boolean isOfferAlreadyApplied() {
+		return isOfferAlreadyApplied;
+	}
+
+	/**
+	 * @param isOfferAlreadyApplied the isOfferAlreadyApplied to set
+	 */
+	public void setOfferAlreadyApplied(boolean isOfferAlreadyApplied) {
+		this.isOfferAlreadyApplied = isOfferAlreadyApplied;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -158,8 +174,10 @@ public class InvoiceLineItem {
 		return "InvoiceLineItem [serialNumber=" + serialNumber + ", ItemName=" + ItemName + ", ItemShortName="
 				+ ItemShortName + ", unitPrice=" + unitPrice + ", noOfItems=" + noOfItems + ", dicsountType="
 				+ dicsountType + ", discountAmount=" + discountAmount + ", total=" + total + ", eligibleForDiscuont="
-				+ eligibleForDiscuont + "]";
+				+ eligibleForDiscuont + ", isOfferAlreadyApplied=" + isOfferAlreadyApplied + "]";
 	}
+
+
 
 	
 }
