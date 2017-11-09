@@ -74,10 +74,9 @@ public class CheckoutHelper {
 			if (availableOffers.containsKey(entry.getKey()) && !entry.getValue().isOfferAlreadyApplied()) {
 				findBestOfferAndApply(entry.getValue(), availableOffers.get(entry.getKey()));
 			}
-			addFreeProductsToInvoice();
 		}
-
-		//To print and see items are added properly 
+		addFreeProductsToInvoice();
+		// To print and see items are added properly
 		for (Map.Entry<String, InvoiceLineItem> entry : invoiceItems.entrySet()) {
 			System.out.println("Pritng invoice line item >>>>>>>>" + entry.getValue());
 		}
@@ -124,9 +123,25 @@ public class CheckoutHelper {
 
 	}
 
-	private void applyDealOnBulk(InvoiceLineItem lineItem, String string) {
+	@SuppressWarnings("unchecked")
+	private void applyDealOnBulk(InvoiceLineItem lineItem, String discountType) {				
 		// TODO Auto-generated method stub
+		System.out.println("inside applyDealOnBulk >>"); 
+		ArrayList<DealOnBulkOffer> dealsForBulk = (ArrayList<DealOnBulkOffer>) offerDetailsForOfferType
+				.get(lineItem.getItemShortName());
+		for (DealOnBulkOffer dealsForBulkObj : dealsForBulk) {
+			if (discountType.equals(dealsForBulkObj.getDealType())
+					&& lineItem.getNoOfItems() > dealsForBulkObj.getItemsRequiredForDeal()) {
 
+				BigDecimal offeredValueForUnit = dealsForBulkObj.getOfferPrice();
+				BigDecimal actualAmount = lineItem.getUnitPrice().multiply(new BigDecimal(lineItem.getNoOfItems()));			
+			    BigDecimal discountAmount = actualAmount.subtract(offeredValueForUnit.multiply(
+			    		new BigDecimal(lineItem.getNoOfItems())));
+				lineItem.setDiscountAmount(discountAmount);
+				lineItem.setTotal(lineItem.getTotal().subtract(discountAmount));
+				lineItem.setOfferAlreadyApplied(true);
+			}
+		}
 	}
 
 	private void applyDealOnBundle(InvoiceLineItem lineItem, String discountType) {
@@ -231,14 +246,15 @@ public class CheckoutHelper {
 	private void loadDealOnNBulk(String resourceName, String productShortName) {
 		// TODO Auto-generated method stub
 		List<String> dealOnNumbersString = FileHelper.loadDetailsfromFile(resourceName);
-		DealOnNumberOffer dealOnNumberOffer = null;
-		ArrayList<DealOnNumberOffer> dealsForNumber = new ArrayList<DealOnNumberOffer>();
+		DealOnBulkOffer dealOnBulkOffer = null;
+		ArrayList<DealOnBulkOffer> dealsFoBulk = new ArrayList<DealOnBulkOffer>();
 		for (String offerTypeString : dealOnNumbersString) {
 			String offerTypesArray[] = offerTypeString.split(",");
-			dealOnNumberOffer = new DealOnNumberOffer(Integer.parseInt(offerTypesArray[0]), offerTypesArray[1],
-					offerTypesArray[2], Integer.parseInt(offerTypesArray[3]), Integer.parseInt(offerTypesArray[4]));
-			dealsForNumber.add(dealOnNumberOffer);
-			offerDetailsForOfferType.put(productShortName, dealsForNumber);
+			dealOnBulkOffer = new DealOnBulkOffer(Integer.parseInt(offerTypesArray[0]), offerTypesArray[1],
+					offerTypesArray[2], Integer.parseInt(offerTypesArray[3]),
+					BigDecimal.valueOf(Double.valueOf(offerTypesArray[4])));
+			dealsFoBulk.add(dealOnBulkOffer);
+			offerDetailsForOfferType.put(productShortName, dealsFoBulk);
 		}
 
 	}
