@@ -105,10 +105,12 @@ public class CheckoutHelper {
 		for (OfferType offerType : offerTypes) {
 			if ("Y".equalsIgnoreCase(offerType.getOfferOnProduct())) {
 
-				if (offerDetailsForOfferType.isEmpty()
+				loadOfferDetailsForOfferType(offerType.getDiscountType(), lineItem.getItemShortName());
+
+/*				if (offerDetailsForOfferType.isEmpty()
 						|| !offerDetailsForOfferType.containsKey(lineItem.getItemShortName())) {
 					loadOfferDetailsForOfferType(offerType.getDiscountType(), lineItem.getItemShortName());
-				}
+				}*/
 				if ("deal_on_numbers".equalsIgnoreCase(offerType.getDiscountType())) {
 					applyDealOnNumbers(lineItem, "deal_on_numbers");
 				}
@@ -176,7 +178,7 @@ public class CheckoutHelper {
 			item = new InvoiceLineItem(product.getProductName(), product.getProductShortName(), product.getUnitPrice(),
 					product.getEligibleForDiscuont());
 			item.setNoOfItems(1);
-			item.setTotal(product.getUnitPrice());
+			item.setUnitPrice(product.getUnitPrice());
 			item.setTotal(new BigDecimal(0.00));
 			invoiceItemsFreeProducts.put(product.getProductShortName(), item);
 		}
@@ -186,18 +188,21 @@ public class CheckoutHelper {
 	private void applyDealOnNumbers(InvoiceLineItem lineItem, String discountType) {
 		// TODO Auto-generated method stub
 		System.out.println("inside apply deal on numbers ");
-		ArrayList<DealOnNumberOffer> dealsForNumbers = (ArrayList<DealOnNumberOffer>) offerDetailsForOfferType
+		ArrayList dealsForNumbers = (ArrayList) offerDetailsForOfferType
 				.get(lineItem.getItemShortName());
-		for (DealOnNumberOffer dealsForNumberObj : dealsForNumbers) {
-			if (discountType.equals(dealsForNumberObj.getDealType())
-					&& lineItem.getNoOfItems() >= dealsForNumberObj.getItemsRequiredForDeal()) {
+		for (Object dealsForNumberObj : dealsForNumbers) {
+			if(dealsForNumberObj instanceof  DealOnNumberOffer){
+				DealOnNumberOffer dealsForNumberObjTmp= (DealOnNumberOffer)dealsForNumberObj;
+			if (discountType.equals(dealsForNumberObjTmp.getDealType())
+					&& lineItem.getNoOfItems() >= dealsForNumberObjTmp.getItemsRequiredForDeal()) {
 
-				Integer freeProducts = lineItem.getNoOfItems() / dealsForNumberObj.getItemsRequiredForDeal();
-				System.out.println("priting free products >>>>>>> " + freeProducts);
+				Integer freeProducts = lineItem.getNoOfItems() / dealsForNumberObjTmp.getItemsRequiredForDeal();
+				System.out.println("priting free products 11 >>>>>>> " + freeProducts);
 				BigDecimal valueOfthefreeItem = lineItem.getUnitPrice().multiply(new BigDecimal(freeProducts));
 				lineItem.setDiscountAmount(valueOfthefreeItem);
 				lineItem.setTotal(lineItem.getTotal().subtract(valueOfthefreeItem));
 				lineItem.setOfferAlreadyApplied(true);
+			}
 			}
 		}
 	}
@@ -210,68 +215,68 @@ public class CheckoutHelper {
 	}
 
 	private void loadOfferDetailsForOfferType(String offerType, String productShortName) {
-		if (offerDetailsForOfferType.isEmpty() || !offerDetailsForOfferType.containsKey(productShortName)) {
-			String resourceName;
 			if ("deal_on_numbers".equalsIgnoreCase(offerType)) {
-				resourceName = deal_on_numbers;
-				loadDealOnNumbers(resourceName, productShortName);
+				loadDealOnNumbers(deal_on_numbers, productShortName);
 			}
 			if ("deal_on_bulk".equalsIgnoreCase(offerType)) {
-				resourceName = deal_on_bulk;
-				loadDealOnNBulk(resourceName, productShortName);
+				loadDealOnNBulk(deal_on_bulk, productShortName);
 			}
 			if ("deal_on_bundle".equalsIgnoreCase(offerType)) {
-				resourceName = deal_on_bundle;
-				loadDealOnNBundle(resourceName, productShortName);
+				loadDealOnNBundle(deal_on_bundle, productShortName);
 			}
-		}
 	}
 
 	private void loadDealOnNBundle(String resourceName, String productShortName) {
 		// TODO Auto-generated method stub
 		List<String> dealOnBundleString = FileHelper.loadDetailsfromFile(resourceName);
 		DealOnBundleOffer dealOnBundleOffer = null;
-		ArrayList<DealOnBundleOffer> dealsForBundle = new ArrayList<DealOnBundleOffer>();
+		ArrayList dealsForBundle = new ArrayList();
 		for (String bundleOfferString : dealOnBundleString) {
 			String bundleOfferArray[] = bundleOfferString.split(",");
 			dealOnBundleOffer = new DealOnBundleOffer(Integer.parseInt(bundleOfferArray[0]), bundleOfferArray[1],
 					bundleOfferArray[2], Integer.parseInt(bundleOfferArray[3]), Integer.parseInt(bundleOfferArray[4]),
 					bundleOfferArray[5]);
 			dealsForBundle.add(dealOnBundleOffer);
-			offerDetailsForOfferType.put(productShortName, dealsForBundle);
 		}
-
+		offerDetailsForOfferType.put(productShortName, dealsForBundle);
 	}
 
 	private void loadDealOnNBulk(String resourceName, String productShortName) {
 		// TODO Auto-generated method stub
 		List<String> dealOnNumbersString = FileHelper.loadDetailsfromFile(resourceName);
 		DealOnBulkOffer dealOnBulkOffer = null;
-		ArrayList<DealOnBulkOffer> dealsFoBulk = new ArrayList<DealOnBulkOffer>();
+		ArrayList dealsFoBulk = new ArrayList();
 		for (String offerTypeString : dealOnNumbersString) {
 			String offerTypesArray[] = offerTypeString.split(",");
 			dealOnBulkOffer = new DealOnBulkOffer(Integer.parseInt(offerTypesArray[0]), offerTypesArray[1],
 					offerTypesArray[2], Integer.parseInt(offerTypesArray[3]),
 					BigDecimal.valueOf(Double.valueOf(offerTypesArray[4])));
 			dealsFoBulk.add(dealOnBulkOffer);
-			offerDetailsForOfferType.put(productShortName, dealsFoBulk);
 		}
-
+		offerDetailsForOfferType.put(productShortName, dealsFoBulk);
 	}
 
 	private void loadDealOnNumbers(String resourceName, String productShortName) {
 
+		 System.out.println("from load deal on numbers ***** ");
+		
 		List<String> dealOnNumbersString = FileHelper.loadDetailsfromFile(resourceName);
 		DealOnNumberOffer dealOnNumberOffer = null;
-		ArrayList<DealOnNumberOffer> dealsForNumber = new ArrayList<DealOnNumberOffer>();
+		ArrayList dealsForNumber = new ArrayList();
 		for (String offerTypeString : dealOnNumbersString) {
 			String offerTypesArray[] = offerTypeString.split(",");
 			dealOnNumberOffer = new DealOnNumberOffer(Integer.parseInt(offerTypesArray[0]), offerTypesArray[1],
 					offerTypesArray[2], Integer.parseInt(offerTypesArray[3]), Integer.parseInt(offerTypesArray[4]));
-			dealsForNumber.add(dealOnNumberOffer);
-			offerDetailsForOfferType.put(productShortName, dealsForNumber);
-		}
-
+			  dealsForNumber.add(dealOnNumberOffer);
+			//  System.out.println(dealOnNumberOffer);
+		   }		
+	      /*  if(offerDetailsForOfferType.containsKey(productShortName)){
+				ArrayList tmpList = (ArrayList)offerDetailsForOfferType.get(productShortName);
+				tmpList.addAll(dealsForNumber);
+				offerDetailsForOfferType.put(productShortName, tmpList);
+			}else{*/
+	//	System.out.println("List size "+ dealsForNumber.size());
+			   offerDetailsForOfferType.put(productShortName, dealsForNumber);
 	}
 
 	private void populateOfferTypeMap(List<String> offerTypeslst) {
@@ -291,7 +296,11 @@ public class CheckoutHelper {
 			}
 		}
 	}
-
+   
+	/*
+	 * 
+	 */
+	
 	private HashMap<String, InvoiceLineItem> prepareInvoiceLineItem(List<String> userInputs) {
 
 		HashMap<String, InvoiceLineItem> lineItemMap = new HashMap<String, InvoiceLineItem>();

@@ -90,4 +90,12 @@ public class DealOnNumberOffer {
 	public void setFreeItems(Integer freeItems) {
 		this.freeItems = freeItems;
 	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "DealOnNumberOffer [id=" + id + ", dealType=" + dealType + ", productShortName=" + productShortName
+				+ ", itemsRequiredForDeal=" + itemsRequiredForDeal + ", freeItems=" + freeItems + "]";
+	}
 }
