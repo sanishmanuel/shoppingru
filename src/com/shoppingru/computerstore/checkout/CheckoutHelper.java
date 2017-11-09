@@ -100,10 +100,20 @@ public class CheckoutHelper {
 			}
 		}
 		addFreeProductsToInvoice();
+		printInvoice();
+	}
+
+	private void printInvoice() {
+		// TODO Auto-generated method stub
 		// To print and see items are added properly
+		BigDecimal total = new BigDecimal(0.00);
+		int i=1;
 		for (Map.Entry<String, InvoiceLineItem> entry : invoiceItems.entrySet()) {
-			System.out.println("Pritng invoice :" + entry.getValue());
+			System.out.println(" Item No."+i+"  "+ entry.getValue());
+			total = total.add(entry.getValue().getTotal());
+			i++;
 		}
+		System.out.println("Priting grand total = "+total);
 	}
 
 	private void addFreeProductsToInvoice() {

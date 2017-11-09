@@ -171,7 +171,7 @@ public class InvoiceLineItem {
 	 */
 	@Override
 	public String toString() {
-		return "InvoiceLineItem [serialNumber=" + serialNumber + ", ItemName=" + ItemName + ", ItemShortName="
+		return "InvoiceLineItem [ ItemName=" + ItemName + ", ItemShortName="
 				+ ItemShortName + ", unitPrice=" + unitPrice + ", noOfItems=" + noOfItems + ", dicsountType="
 				+ dicsountType + ", discountAmount=" + discountAmount + ", total=" + total + ", eligibleForDiscuont="
 				+ eligibleForDiscuont + ", isOfferAlreadyApplied=" + isOfferAlreadyApplied + "]";
