@@ -73,9 +73,13 @@ public class CheckoutHelper {
 		for (Map.Entry<String, InvoiceLineItem> entry : invoiceItems.entrySet()) {
 			if (availableOffers.containsKey(entry.getKey()) && !entry.getValue().isOfferAlreadyApplied()) {
 				findBestOfferAndApply(entry.getValue(), availableOffers.get(entry.getKey()));
-				System.out.println("Pritng invoice line item >>>>>>>>" + entry.getValue());
 			}
 			addFreeProductsToInvoice();
+		}
+
+		//To print and see items are added properly 
+		for (Map.Entry<String, InvoiceLineItem> entry : invoiceItems.entrySet()) {
+			System.out.println("Pritng invoice line item >>>>>>>>" + entry.getValue());
 		}
 	}
 
