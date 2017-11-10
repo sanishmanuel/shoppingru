@@ -31,9 +31,22 @@ public class CheckoutHelperTest {
 		Assert.assertEquals(2, checoutHelper.getUserInputs().size());
 	}
 
+
 	@Test
-	public void test() {
-		fail("Not yet implemented");
+	/*
+	 * testing valid product check .
+	 */
+	public void testingValidProductCheck() {
+			Assert.assertTrue(CheckoutHelper.isItemValid("mbp"));
 	}
-      
+	
+	@Test
+	/*
+	 * testing valid product check .
+	 */
+	public void testingValidProductCheckFailScenario() {
+			Assert.assertFalse(CheckoutHelper.isItemValid("mba"));
+	}
+	
+
 }
